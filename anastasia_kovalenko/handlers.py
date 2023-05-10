@@ -17,7 +17,7 @@ class BotStates(StatesGroup):
     waiting_activities = State()
 
 
-async def process_start(message: types.Message):
+async def process_start(message: types.Message, state: FSMContext):
     """
     Processes /start command.
     """
@@ -25,6 +25,11 @@ async def process_start(message: types.Message):
                              'Я бот-помощник.\nПомогу с выбором подарка на день рождения!'
                              + surrogates.decode('\ud83c\udf89'))
     answer = "Кому хотите подобрать подарок?"
+    async with state.proxy() as person_info:
+        person_info['activities'] = set()
+        person_info['age'] = None
+        person_info['gender'] = None
+        person_info['type'] = None
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = [pers for pers in Person]
     keyboard.add(*buttons)
@@ -123,6 +128,10 @@ async def process_person_activities(message: types.Message, state: FSMContext):
                              reply_markup=types.ReplyKeyboardRemove())
         async with state.proxy() as person_info:
             answer = generate_recommendation(person_info=person_info)
+            person_info['activities'] = set()
+            person_info['age'] = None
+            person_info['gender'] = None
+            person_info['type'] = None
         await message.answer(answer)
         await BotStates.start_state.set()
     elif activity in list(Activities):
