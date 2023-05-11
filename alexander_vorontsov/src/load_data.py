@@ -8,7 +8,8 @@ class Downloader:
         self.save = save
 
     def run(self):
-        train_set, test_set = load_dataset(self.dataset_name, split=['train', 'validation'])
+        train_set = load_dataset(self.dataset_name, split='train')
+        test_set = load_dataset(self.dataset_name, split='validation')
         train_df = pd.DataFrame(train_set)
         test_df = pd.DataFrame(test_set)
         if self.save:
