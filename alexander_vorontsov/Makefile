@@ -19,8 +19,11 @@ dev.install:
 
 data.load:
 	echo "Download data"
-	cd src
 	python -m src.load_data
+
+data.preprocessing:
+	echo "Preprocessing data"
+	python -m src.preprocessing
 
 build: dev.install lint test
 run:
