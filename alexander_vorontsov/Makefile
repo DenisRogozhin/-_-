@@ -4,6 +4,7 @@
 lint:
 	echo "Linting"
 	isort src
+	pydocstyle src
 	mypy src
 	flake8 src
 
