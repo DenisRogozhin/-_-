@@ -4,9 +4,11 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.utils import executor
+from dotenv import load_dotenv
 
 import emoji
 import numpy as np
+import os
 
 vis = []
 
@@ -94,8 +96,9 @@ __________
 |
 """)
 
-
-TOKEN = '6274460969:AAFBLDpm9Tfswu8G56W1GQSe935Y6rclohs'
+dotenv_path = 'variables.env'
+load_dotenv(dotenv_path)
+TOKEN = os.getenv('TOKEN')
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
@@ -268,6 +271,5 @@ async def cows_and_ox(message: types.Message, state: FSMContext):
 @dp.message_handler(content_types=types.ContentType.ANY, state='*')
 async def unknown_message(msg: types.Message):
     await bot.send_message(msg.from_user.id, 'Я умею отвечать только на текстовые сообщения!')  
-    
     
 executor.start_polling(dp)
