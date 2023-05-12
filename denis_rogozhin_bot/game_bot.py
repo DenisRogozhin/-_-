@@ -180,8 +180,8 @@ async def choose_type(message: types.Message, state: FSMContext):
 @dp.message_handler(state=BotStates.vis_state)
 async def vis_handler(message: types.Message, state: FSMContext):
     guess = message.text
+    secret, attempts, state, letters = guessed[message.from_user.id]
     if len(guess) == 1 and guess.isalpha():
-        secret, attempts, state, letters = guessed[message.from_user.id]
         if guess in letters:
             answer = "Данная буква уже угадывалась!\n"
         elif guess in secret:
@@ -223,7 +223,15 @@ async def vis_handler(message: types.Message, state: FSMContext):
         answer += vis[attempts]
         guessed[message.from_user.id] = secret, attempts, state, letters
         await bot.send_message(message.from_user.id, answer) 
-        
+    else:
+        answer = "Некорректный ввод.\n"
+        answer += "Введите букву\n\n\n"
+        answer += "слово: " + pretty_print(state) + "\n"
+        answer += vis[attempts]
+        await bot.send_message(message.from_user.id, answer) 
+    
+    
+    
 def bullscows(guess, secret):
     cows = 0
     bulls = 0
