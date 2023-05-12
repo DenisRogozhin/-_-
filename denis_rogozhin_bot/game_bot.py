@@ -198,7 +198,6 @@ async def vis_handler(message: types.Message, state: FSMContext):
             state = new_state
             if state == secret:
                 answer = "Вы угадали слово: " + state + emoji.emojize(":brain:")
-                await bot.send_message(message.from_user.id, answer)
                 keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
                 buttons = ["быки и коровы", "виселица"]
                 keyboard.add(*buttons)
