@@ -249,6 +249,7 @@ async def cows_and_ox(message: types.Message, state: FSMContext):
     guess = message.text
     if len(guess) == 4 and guess.isnumeric() and len(set(guess)) == 4:
         secret, attempts = guessed[message.from_user.id]
+        attempts = attempts + 1
         if guess == secret:
             answer = f"Вы угадали! Число попыток: {attempts} попыток! " +  emoji.emojize(":brain:") + "\nВ какую игру вы хотите сыграть?"
             keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -262,6 +263,7 @@ async def cows_and_ox(message: types.Message, state: FSMContext):
             await bot.send_message(message.from_user.id, answer)
             answer = "Введите число из 4 цифр"
             await bot.send_message(message.from_user.id, answer)
+        guessed[message.from_user.id] = secret, attempts
     else:
         answer = "Неправильный ввод. Введите число из 4 цифр без повторений"
         await bot.send_message(message.from_user.id, answer)
