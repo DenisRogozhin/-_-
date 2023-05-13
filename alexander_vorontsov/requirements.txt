@@ -2,10 +2,5 @@ aiogram==2.25.1
 datasets==2.12.0
 pandas==1.5.3
 numpy==1.24.3
-pymystem3==0.2.0
-urllib3==2.0.2
-ufal.udpipe==1.3.0.1
-tensorflow_gpu==1.15.4
-ufal.chu_liu_edmonds
 requests~=2.30.0
 scikit-learn~=1.2.2
