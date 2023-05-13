@@ -5,7 +5,12 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 
+import os
+import random
 from datetime import datetime
+from nltk import word_tokenize
+import pymorphy2
+import string
 
 
 with open('./.env', mode='r', encoding='utf-8') as env_file:
@@ -39,7 +44,7 @@ async def process_command_start(message: types.Message):
 
 @dp.message_handler(state=BotStates.waiting_state)        
 async def process_waiting(message: types.Message):
-    msg = 'Отлично! Ты можешь начать тренировку, а также попросить меня смотивировать тебя или развеселить мемасиком. Также можешь попробовать написать что-то ещё, возможно я смогу ответить.'
+    msg = 'Отлично! Ты можешь начать тренировку, а также попросить меня смотивировать тебя или развеселить мемасиком.'
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = ['Начать тренировку']
@@ -65,10 +70,7 @@ async def process_doing_nothing(message: types.Message):
         await BotStates.wout_state.set()
 
     else:
-        msg = 'мемасики'
-
-        await preprocess_input(msg)
-        await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
+        await find_similar_action(message)
 
 
 @dp.message_handler(state=BotStates.wout_state)
@@ -102,10 +104,7 @@ async def process_workout(message: types.Message):
         await BotStates.waiting_state.set()
 
     else:
-        msg = 'мемасики 2'
-
-        await preprocess_input(msg)
-        await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
+        await find_similar_action(message)
 
 
 @dp.message_handler(state=BotStates.ex_state)
@@ -115,8 +114,6 @@ async def process_ex(message: types.Message):
 
     if message.text.isdigit():
         workout_data[f'Упражнение №{curr_ex}']['Подходы'].append(int(message.text))
-        print(workout_data)
-
         msg = 'Введите количество повторений:'
         await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
 
@@ -137,8 +134,36 @@ async def process_ex(message: types.Message):
         await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
 
 
+async def find_similar_action(message: types.Message):
+    vec = await preprocess_input(message.text)
+
+    for w in ['мем', 'шут', 'прикол']:
+        if any(map(lambda x: w in x, vec)):
+            pth = './memes/'
+            with open(pth + random.choice(os.listdir(pth)), mode='rb') as photo:
+                await bot.send_photo(message.from_user.id, photo)
+            return
+    
+    for w in ['цитат', 'мотив']:
+        if any(map(lambda x: w in x, vec)):
+            mode = random.choice(['txt', 'voice'])
+            if mode == 'txt':
+                with open('./quotes.txt', mode='r', encoding='utf-8') as q_file:
+                    msg = random.choice(list(map(lambda s: s.strip(), q_file.readlines())))
+                    await bot.send_message(message.from_user.id, msg)
+            else:
+                pth = './voices/'
+                with open(pth + random.choice(os.listdir(pth)), mode='rb') as vc:
+                    await bot.send_voice(message.from_user.id, vc)
+            return
+
+
 async def preprocess_input(text):
-    pass
+    text = text.lower()
+    morph = pymorphy2.MorphAnalyzer()
+    tokens = [tok for tok in word_tokenize(text, language='russian') if tok not in string.punctuation]
+    lemmas = [morph.parse(tok)[0].normal_form for tok in tokens]
+    return lemmas
 
 
 executor.start_polling(dp)
