@@ -11,6 +11,7 @@ from datetime import datetime
 from nltk import word_tokenize
 import pymorphy2
 import string
+import json
 
 
 with open('./.env', mode='r', encoding='utf-8') as env_file:
@@ -156,6 +157,14 @@ async def find_similar_action(message: types.Message):
                 with open(pth + random.choice(os.listdir(pth)), mode='rb') as vc:
                     await bot.send_voice(message.from_user.id, vc)
             return
+        
+    if any(map(lambda x: 'совет' in x, vec)) and any(map(lambda x: 'упражн' in x, vec)):
+        with open('./exercises.json', mode='r', encoding='utf-8') as ex_file:
+            all_exercises = json.load(ex_file)
+            group = random.choice(list(all_exercises.keys()))
+            ex = random.choice(all_exercises[group])
+            msg = f'Упражнение на {group.lower()}: {ex}'
+            await bot.send_message(message.from_user.id, msg)
 
 
 async def preprocess_input(text):
