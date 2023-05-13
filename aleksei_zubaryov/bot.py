@@ -1,0 +1,144 @@
+from aiogram import Bot
+from aiogram.dispatcher import Dispatcher
+from aiogram.utils import executor
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram import types
+
+from datetime import datetime
+
+
+with open('./.env', mode='r', encoding='utf-8') as env_file:
+    token = env_file.read()
+bot = Bot(token=token)
+dp = Dispatcher(bot, storage=MemoryStorage())
+
+workout_data = {}
+curr_ex = 0
+
+
+class BotStates(StatesGroup):
+    start_state = State()
+    waiting_state = State()
+    doing_nothing_state = State()
+    wout_state = State()
+    ex_state = State()
+
+
+@dp.message_handler(commands=['start'])
+async def process_command_start(message: types.Message):
+    intro = 'Привет! Меня зовут Ронни и я помогу тебе записывать прогресс на своей тренировке. Начнём?'
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    buttons = ['Поехали!']
+    keyboard.add(*buttons)
+
+    await message.answer(intro, reply_markup=keyboard)
+    await BotStates.waiting_state.set()
+
+
+@dp.message_handler(state=BotStates.waiting_state)        
+async def process_waiting(message: types.Message):
+    msg = 'Отлично! Ты можешь начать тренировку, а также попросить меня смотивировать тебя или развеселить мемасиком. Также можешь попробовать написать что-то ещё, возможно я смогу ответить.'
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    buttons = ['Начать тренировку']
+    keyboard.add(*buttons)
+
+    await message.answer(msg, reply_markup=keyboard)
+    await BotStates.doing_nothing_state.set()
+
+
+@dp.message_handler(state=BotStates.doing_nothing_state)
+async def process_doing_nothing(message: types.Message):
+    global workout_data
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    if message.text == 'Начать тренировку':
+        st_time = datetime.now()
+        msg = f'Yeaaaaahh buddy!\nНачало: {st_time.strftime("%d-%m-%Y %H:%M:%S")}'
+        workout_data['start_time'] = st_time
+        buttons = ['Новое упражнение', 'Закончить тренировку']
+        keyboard.add(*buttons)
+
+        await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
+        await BotStates.wout_state.set()
+
+    else:
+        msg = 'мемасики'
+
+        await preprocess_input(msg)
+        await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
+
+
+@dp.message_handler(state=BotStates.wout_state)
+async def process_workout(message: types.Message):
+    global workout_data, curr_ex
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    if message.text == 'Новое упражнение':
+        curr_ex = 0
+        workout_data = {}
+
+        curr_ex += 1
+        st_time = datetime.now()
+        workout_data[f'Упражнение №{curr_ex}'] = {'start_time': st_time, 'Подходы': []}
+
+        msg = f'Упражнение №{curr_ex}\nНачало: {st_time.strftime("%H:%M:%S")}\nВведите количество повторений:'
+        buttons = ['Закончить упражнение']
+        keyboard.add(*buttons)
+
+        await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
+        await BotStates.ex_state.set()
+
+    elif message.text == 'Закончить тренировку':
+        workout_data['end_time'] = datetime.now()
+        dur = (workout_data['end_time'] - workout_data['start_time']).seconds
+        msg = f'Тренировка закончена! Продолжительность: {dur // 60}m {dur % 60}s\nТы сегодня хорошо потрудился!'
+        buttons = ['Начать тренировку']
+        keyboard.add(*buttons)
+
+        await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
+        await BotStates.waiting_state.set()
+
+    else:
+        msg = 'мемасики 2'
+
+        await preprocess_input(msg)
+        await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
+
+
+@dp.message_handler(state=BotStates.ex_state)
+async def process_ex(message: types.Message):
+    global workout_data
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    if message.text.isdigit():
+        workout_data[f'Упражнение №{curr_ex}']['Подходы'].append(int(message.text))
+        print(workout_data)
+
+        msg = 'Введите количество повторений:'
+        await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
+
+    elif message.text == 'Закончить упражнение':
+        end_time = datetime.now()
+        start_time = workout_data[f'Упражнение №{curr_ex}']['start_time']
+        dur = (end_time - start_time).seconds
+        workout_data[f'Упражнение №{curr_ex}']['end_time'] = end_time
+        buttons = ['Новое упражнение', 'Закончить тренировку']
+        keyboard.add(*buttons)
+        msg = f'Упражнение закончено. Продолжительность: {dur // 60}m {dur % 60}s'
+
+        await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
+        await BotStates.wout_state.set()
+
+    else:
+        msg = 'Во время упражнения отвлекаться нельзя!'
+        await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
+
+
+async def preprocess_input(text):
+    pass
+
+
+executor.start_polling(dp)
