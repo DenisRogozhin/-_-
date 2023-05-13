@@ -156,7 +156,7 @@ def pretty_print(string):
     
 @dp.message_handler(state=BotStates.waiting_state)
 async def choose_type(message: types.Message, state: FSMContext):    
-    text =  message.text
+    text =  message.text.lower()
     if text not in ["быки и коровы", "виселица"]:
         answer = "Не умею играть в такую игру!"
         await bot.send_message(message.from_user.id, answer)
