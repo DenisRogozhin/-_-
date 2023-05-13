@@ -7,6 +7,7 @@ from aiogram.utils import executor
 
 from src.udpipe import Model
 from src.train_model import Classifier
+from src.utils import pretty_print
 
 
 class BotStates(StatesGroup):
@@ -100,19 +101,11 @@ class UDPipeBot:
 
     @dp.message_handler(state=BotStates.cut_down_state)
     async def cut_down(self, message: types.Message, state: FSMContext):
-        words = message.text.split()
-        words = [lemmatize(word) for word in words]
-        answer = ' '.join(words)
+        response_result = self.model.get_response(message.text)
+        parse_result = self.model.parse_result(response_result)
+        answer = pretty_print(parse_result, "cut")
         await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
-        await BotStates.lemmatize_state.set()
-
-    @dp.message_handler(state=BotStates.stemming_state)
-    async def stemming(self, message: types.Message, state: FSMContext):
-        words = message.text.split()
-        words = [ps.stem(word) for word in words]
-        answer = ' '.join(words)
-        await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
-        await BotStates.stemming_state.set()
+        await BotStates.cut_down_state.set()
 
     @dp.message_handler(content_types=types.ContentType.ANY, state='*')
     async def unknown_message(self, msg: types.Message):
