@@ -8,16 +8,20 @@ import pickle
 class Classifier:
     def __init__(
             self,
-            train_file_name: str,
-            test_file_name: str,
+            new_init: bool = False,
+            train_file_name: str = "data/train.csv",
+            test_file_name: str = "data/test.csv",
             text_column: str = "content",
             ans_column: str = "grade3",
     ):
         self.train_file_name = train_file_name
         self.test_file_name = test_file_name
-        self.vectorizer = TfidfVectorizer()
-        self.label_encoder = LabelEncoder()
-        self.model = LogisticRegression(multi_class='multinomial', solver='lbfgs')
+        self.vectorizer = TfidfVectorizer() if new_init else pickle.load(open('data/vectorizer.pickle', 'rb'))
+        self.label_encoder = LabelEncoder() if new_init else pickle.load(open('data/label_encoder.pickle', 'rb'))
+        self.model = LogisticRegression(
+            multi_class='multinomial',
+            solver='lbfgs'
+        ) if new_init else pickle.load(open('data/model.pickle', 'rb'))
         self.text_column = text_column
         self.ans_column = ans_column
 
@@ -38,8 +42,12 @@ class Classifier:
         pickle.dump(self.vectorizer, open("data/vectorizer.pickle", "wb"))
         pickle.dump(self.model, open("data/model.pickle", "wb"))
 
+    def predict(self, content):
+        x = self.vectorizer.transform(content)
+        return self.model.predict(x)
+
 
 if __name__ == '__main__':
-    cls = Classifier("data/train.csv", "data/test.csv")
+    cls = Classifier()
     cls.train()
     cls.save()
