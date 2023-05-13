@@ -182,7 +182,7 @@ async def choose_type(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=BotStates.vis_state)
 async def vis_handler(message: types.Message, state: FSMContext):
-    guess = message.text
+    guess = message.text.lower()
     secret, attempts, state, letters = guessed[message.from_user.id]
     if len(guess) == 1 and guess.isalpha():
         if guess in letters:
