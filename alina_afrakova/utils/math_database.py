@@ -55,7 +55,7 @@ class MathDatabase:
     
     def load_file(self, file_name: str) -> List[Tuple[str, str]]:
         file_ext = os.path.splitext(file_name)[-1]
-        with open(os.path.json(self.dataset_path, file_name), 'r', encoding='utf-8') as text_file:
+        with open(os.path.join(self.dataset_path, file_name), 'r', encoding='utf-8') as text_file:
             if file_ext == '.csv':
                 csv_reader = csv.reader(text_file, sep='\t', quotechar="'")
                 data = [(f"{row[0]} {row[1]}", row[2]) for row in csv_reader]
