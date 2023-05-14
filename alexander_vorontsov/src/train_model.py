@@ -3,6 +3,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import LabelEncoder
 import pickle
+from typing import Any
 
 
 class Classifier:
@@ -42,9 +43,12 @@ class Classifier:
         pickle.dump(self.vectorizer, open("data/vectorizer.pickle", "wb"))
         pickle.dump(self.model, open("data/model.pickle", "wb"))
 
-    def predict(self, content):
+    def predict(self, content: Any, inverse_transform: bool = False) -> Any:
         x = self.vectorizer.transform(content)
-        return self.model.predict(x)
+        result = self.model.predict(x)
+        if inverse_transform:
+            return self.label_encoder.inverse_transform(result)
+        return result
 
 
 if __name__ == '__main__':

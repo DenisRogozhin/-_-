@@ -20,6 +20,19 @@ def pretty_print(answer_dict: Dict[str, Any], print_type: str) -> str:
         for cur_msg in answer_dict['main_words']:
             message += ' '.join(cur_msg)
         message += '.'
+    elif print_type == "lemma":
+        message = "Лемматизированный текст: \n"
+        for cur_msg in answer_dict['lemmas']:
+            message += ' '.join(cur_msg)
+        message += '.'
     else:
         message = ""
     return message
+
+
+def tonality_print(mark: str) -> str:
+    if mark == "Good":
+        return "Ваш текст преисполнен позитивом!"
+    if mark == "Bad":
+        return "Скорее всего, это негативный текст"
+    return "Нейтральный текст"

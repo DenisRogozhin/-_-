@@ -7,7 +7,7 @@ from aiogram.utils import executor
 
 from src.udpipe import Model
 from src.train_model import Classifier
-from src.utils import pretty_print
+from src.utils import pretty_print, tonality_print
 
 
 class BotStates(StatesGroup):
@@ -104,6 +104,30 @@ class UDPipeBot:
         response_result = self.model.get_response(message.text)
         parse_result = self.model.parse_result(response_result)
         answer = pretty_print(parse_result, "cut")
+        await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
+        await BotStates.cut_down_state.set()
+
+    @dp.message_handler(state=BotStates.lemma_state)
+    async def lemma(self, message: types.Message, state: FSMContext):
+        response_result = self.model.get_response(message.text)
+        parse_result = self.model.parse_result(response_result)
+        answer = pretty_print(parse_result, "cut")
+        await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
+        await BotStates.cut_down_state.set()
+
+    @dp.message_handler(state=BotStates.tonality_state)
+    async def tonality(self, message: types.Message, state: FSMContext):
+        response_result = self.model.get_response(message.text)
+        parse_result = self.model.parse_result(response_result)
+
+        content = ""
+        for cur_msg in parse_result['main_words']:
+            content += ' '.join(cur_msg)
+        content += '.'
+
+        mark = self.classifier.predict(content, True)
+
+        answer = tonality_print(mark)
         await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
         await BotStates.cut_down_state.set()
 
