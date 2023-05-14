@@ -15,7 +15,7 @@ with open('Token.txt', 'r', encoding='utf-8') as ftoken:
     Token= ftoken.read()
 
 bot=Bot(token=Token)
-dpr=Dispatcher(bot,storage=MemoryStorage())
+dp=Dispatcher(bot,storage=MemoryStorage())
 
 class Botstates(StatesGroup):
   st_start=State()
@@ -41,14 +41,14 @@ class Game_parameters:
     return "Вы: "+str(self.g_score[0])+" - Я: "+str(self.g_score[1])
 
 
-@dp.message.handler(commands=['start'])
+@dp.message_handler(commands=['start'])
 async def proc_com_start(message: types.Message) :
+  keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
   await bot.send_message(message.from_user.id,"Сыграем в города!",reply_markup=keyboard)
   await bot.send_message(message.from_user.id,"Кто начинает?",reply_markup=keyboard)
   if game_parameters_by_id.get(message.from_user.id)==None:game_parameters_by_id[message.from_user.id]=Game_parameters() #по id пустые словари слов
   if game_parameters_by_id[message.from_user.id].g_score!=[] : buttons=["Я","Ты","Счет"]
   else:buttons=["Я","Ты"]
-  keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
   keyboard.add(*buttons)
   await Botstates.st_wait_who.set()
 
@@ -81,21 +81,23 @@ def lastletter_user(s):
     return -1 #даже первая с конца которая уже не ь\ъ неподходящая
   else: return len(s)-1
 
-@dp.message.handler(commands=['reset'])# сброс прогресса вообще. мало ли хочется заново счет вести, или заставить забыть твои города
+@dp.message_handler(commands=['reset'])# сброс прогресса вообще. мало ли хочется заново счет вести, или заставить забыть твои города
 async def proc_com_progress_reset(message: types.Message,state: FSMContext):
   game_parameters_by_id[message.from_user.id]=Game_parameters()
+  keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
   await bot.send_message(message.from_user.id,"Начнем с чистого листа!",reply_markup=keyboard)
   await bot.send_message(message.from_user.id,"Если захотите поиграть, введите /start",reply_markup=keyboard)
   await Botstates.st_start.set()
 
-@dp.message.handler(commands=['exit'])#то же самое что и логика "сдаюсь" но командой, формально. Одинаково для всех состояний- просто сброс прогресса текущей игры без чьей-то победы
+@dp.message_handler(commands=['exit'])#то же самое что и логика "сдаюсь" но командой, формально. Одинаково для всех состояний- просто сброс прогресса текущей игры без чьей-то победы
 async def proc_com_exit(message: types.Message,state: FSMContext):
+  keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
   if game_parameters_by_id[message.from_user.id].g_score!=[] :
     await bot.send_message(message.from_user.id,"Игра отменена. Текущий счет: "+game_parameters_by_id[message.from_user.id].curr_score(),reply_markup=keyboard)
   await bot.send_message(message.from_user.id,"Если захотите еще поиграть, введите /start",reply_markup=keyboard)
   await Botstates.st_start.set()
 
-@dp.message.handler( state=Botstates.st_wait_who)
+@dp.message_handler( state=Botstates.st_wait_who)
 async def proc_word_who(message: types.Message,state: FSMContext):#контекст для словарей по id и списка слов
   msg=message.text.lower()
   if(msg=='ты')or(msg=='вы'):
@@ -142,8 +144,8 @@ async def proc_word_who(message: types.Message,state: FSMContext):#контек�
   else:
     await bot.send_message(message.from_user.id, "Что-то я не понимаю... так вы начинаете или я?",reply_markup=keyboard)
 
-@dp.message.handler( state=Botstates.st_wait_word)#получаем слово, если есть норм последняя буква, (если не знали(vocab+learned) - добавляем себе в learned), то ищем у себя по букве, не находим - сдаемся(счет+1), находим - удаляем,выводим,по букве в состояние
-async def proc_first_word(message: types.Message,state: FSMContext)
+@dp.message_handler( state=Botstates.st_wait_word)#получаем слово, если есть норм последняя буква, (если не знали(vocab+learned) - добавляем себе в learned), то ищем у себя по букве, не находим - сдаемся(счет+1), находим - удаляем,выводим,по букве в состояние
+async def proc_first_word(message: types.Message,state: FSMContext):
   msg=message.text.lower()
   if  (msg=='счет') or (msg=='результат'):
     if game_parameters_by_id[message.from_user.id].g_score!=[] : 
@@ -199,7 +201,7 @@ def isword(s):#да, есть один город, оканчивающийся 
   return False
 
 # ожидание после слова с определенной последней буквой слова с определенной первой буквой
-@dp.message.handler(state=Botstates.st_word_for_letter)
+@dp.message_handler(state=Botstates.st_word_for_letter)
 async def proc_word_for_letter(message: types.Message,state: FSMContext):
   msg=message.lower()
   if  (msg=='сдаюсь')or(msg=='нет')or(msg=='я сдаюсь'):
@@ -252,6 +254,7 @@ async def proc_word_for_letter(message: types.Message,state: FSMContext):
 
 @dp.message_handler(content_types=types.ContentType.ANY, state='*')
 async def unknown_message(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     await bot.send_message(message.from_user.id, "Что-то я запутался... так мы играем или нет?",reply_markup=keyboard)
 
 executor.start_polling(dp)
