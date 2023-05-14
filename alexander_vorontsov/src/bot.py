@@ -20,16 +20,26 @@ class BotStates(StatesGroup):
 
 
 class UDPipeBot:
-    TOKEN = '6299008004:AAErm1ncfIqzwLzOm0zfoGVcNHG6LJAN8mE'
-    dp = Dispatcher(Bot(token=TOKEN), storage=MemoryStorage())
-
-    def __init__(self, model: Model, classifier: Classifier):
-        self.bot = Bot(token=self.TOKEN)
-        self.dp = Dispatcher(self.bot, storage=MemoryStorage())
+    def __init__(self, token: str, model: Model, classifier: Classifier):
         self.model = model
         self.classifier = classifier
 
-    @dp.message_handler(commands=['help'], state='*')
+        self.bot = Bot(token=token)
+        self.dp = Dispatcher(self.bot, storage=MemoryStorage())
+
+        self.process_help_command = self.dp.message_handler(commands=['help'], state='*')(self.process_help_command)
+        self.process_start_command = self.dp.message_handler(commands=['start'])(self.process_start_command)
+        self.echo_message = self.dp.message_handler()(self.echo_message)
+        self.process_exit_command = self.dp.message_handler(commands=['exit'], state='*')(self.process_exit_command)
+        self.choose_type = self.dp.message_handler(state=BotStates.waiting_state)(self.choose_type)
+        self.cut_down = self.dp.message_handler(state=BotStates.cut_down_state)(self.cut_down)
+        self.lemma = self.dp.message_handler(state=BotStates.lemma_state)(self.lemma)
+        self.tonality = self.dp.message_handler(state=BotStates.tonality_state)(self.tonality)
+        self.unknown_message = self.dp.message_handler(
+            content_types=types.ContentType.ANY,
+            state='*'
+        )(self.unknown_message)
+
     async def process_help_command(self, message: types.Message):
         answer = """
             /start - начало работы
@@ -37,8 +47,8 @@ class UDPipeBot:
         """
         await self.bot.send_message(message.from_user.id, answer)
 
-    @dp.message_handler(commands=['start'])
     async def process_start_command(self, message: types.Message):
+        # await message.reply("Hello wolrd!")
         init_msg = """
             Привет! Я бот, который поможет разобраться с UDPipe.
 
@@ -54,15 +64,10 @@ class UDPipeBot:
         await self.bot.send_message(message.from_user.id, init_msg, reply_markup=keyboard)
         await BotStates.waiting_state.set()
 
-    @dp.message_handler()
     async def echo_message(self, message: types.Message):
         answer = "Введите /start"
         await self.bot.send_message(message.from_user.id, answer)
 
-    @dp.message_handler(commands=['exit'], state=BotStates.lemma_state)
-    @dp.message_handler(commands=['exit'], state=BotStates.cut_down_state)
-    @dp.message_handler(commands=['exit'], state=BotStates.tonality_state)
-    @dp.message_handler(commands=['exit'], state=BotStates.more_info_state)
     async def process_exit_command(self, message: types.Message):
         answer = "Хотите перейти к сокращению, лемматизации, тональности или узнать подробности моей работы?"
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -71,7 +76,6 @@ class UDPipeBot:
         await self.bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
         await BotStates.waiting_state.set()
 
-    @dp.message_handler(state=BotStates.waiting_state)
     async def choose_type(self, message: types.Message, state: FSMContext):
         text = message.text
         if text not in ["Сокращение", "Лемматизация", "Тональность", "Подробнее"]:
@@ -99,7 +103,6 @@ class UDPipeBot:
             await self.bot.send_message(message.from_user.id, answer)
             await BotStates.more_info_state.set()
 
-    @dp.message_handler(state=BotStates.cut_down_state)
     async def cut_down(self, message: types.Message, state: FSMContext):
         response_result = self.model.get_response(message.text)
         parse_result = self.model.parse_result(response_result)
@@ -107,7 +110,6 @@ class UDPipeBot:
         await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
         await BotStates.cut_down_state.set()
 
-    @dp.message_handler(state=BotStates.lemma_state)
     async def lemma(self, message: types.Message, state: FSMContext):
         response_result = self.model.get_response(message.text)
         parse_result = self.model.parse_result(response_result)
@@ -115,7 +117,6 @@ class UDPipeBot:
         await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
         await BotStates.cut_down_state.set()
 
-    @dp.message_handler(state=BotStates.tonality_state)
     async def tonality(self, message: types.Message, state: FSMContext):
         response_result = self.model.get_response(message.text)
         parse_result = self.model.parse_result(response_result)
@@ -131,7 +132,6 @@ class UDPipeBot:
         await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
         await BotStates.cut_down_state.set()
 
-    @dp.message_handler(content_types=types.ContentType.ANY, state='*')
     async def unknown_message(self, msg: types.Message):
         await self.bot.send_message(msg.from_user.id, 'Я умею отвечать только на текстовые сообщения!')
 
