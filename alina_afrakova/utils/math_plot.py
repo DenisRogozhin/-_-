@@ -3,7 +3,7 @@ import re
 import numpy as np
 import matplotlib.pyplot as plt
 
-from math_solver import MathSolver
+from utils.math_solver import MathSolver
 
 
 class MathPlot:
