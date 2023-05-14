@@ -6,9 +6,9 @@ from typing import Tuple, List
 
 
 class MathDatabase:
-    def __init__(self, path='math_dataset') -> None:
-        self.dataset_path = path
-        with open(os.path.json(path, '.configs.json'), 'r', encoding='utf-8') as configs:
+    def __init__(self) -> None:
+        self.dataset_path = os.path.join(os.path.dirname(__file__), 'utils', 'math_dataset')
+        with open(os.path.join(self.dataset_path, '.configs.json'), 'r', encoding='utf-8') as configs:
             self.dataset_configs = json.load(configs)
         self.curr_choices = []
         self.data = None
