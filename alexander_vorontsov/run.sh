@@ -1,2 +1,2 @@
-make build
-make run
+make fast.run
+#make dev.run

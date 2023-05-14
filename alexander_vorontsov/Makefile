@@ -25,7 +25,9 @@ data.preprocessing:
 	echo "Preprocessing data"
 	python -m src.preprocessing
 
-build: dev.install lint test
-run:
+dev.run: dev.install data.load data.preprocessing lint test
+	echo "Run build"
+	python src.main.py
+fast.run: dev.install
 	echo "Run bot"
 	python src.main.py
