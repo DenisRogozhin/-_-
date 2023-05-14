@@ -33,6 +33,8 @@ class BotStates(StatesGroup):
 
 @dp.message_handler(commands=['info'], state='*')
 async def print_workout_stats(message: types.Message):
+    '''Print workout stats'''
+
     global workout_data, curr_ex
 
     if 'start_time' in workout_data:
@@ -58,6 +60,8 @@ async def print_workout_stats(message: types.Message):
 
 @dp.message_handler(commands=['start'], state='*')
 async def process_command_start(message: types.Message):
+    '''Command start. It could be executed anywhere.'''
+
     global workout_data, curr_ex
     workout_data = {}
     curr_ex = 0
@@ -79,6 +83,8 @@ async def echo_message(message: types.Message):
 
 @dp.message_handler(state=BotStates.waiting_state)        
 async def process_waiting(message: types.Message):
+    '''State of waiting first response'''
+
     msg = 'Отлично! Ты можешь начать тренировку, попросить посоветовать упражнение, а также смотивировать тебя или развеселить мемасиком.'
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -91,6 +97,8 @@ async def process_waiting(message: types.Message):
 
 @dp.message_handler(state=BotStates.doing_nothing_state)
 async def process_doing_nothing(message: types.Message):
+    '''State when you can start new workout or just have fun with memes'''
+
     global workout_data, curr_ex
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
@@ -112,6 +120,8 @@ async def process_doing_nothing(message: types.Message):
 
 @dp.message_handler(state=BotStates.wout_state)
 async def process_workout(message: types.Message):
+    '''Workout process. You can add new exercise or finish the workout. Memes are still avaliable.'''
+
     global workout_data, curr_ex
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
@@ -143,6 +153,8 @@ async def process_workout(message: types.Message):
 
 @dp.message_handler(state=BotStates.ex_state)
 async def process_ex(message: types.Message):
+    '''Exercise process. You can print how much reps you've done during trip (set) or you can finish the exercise.'''
+
     global workout_data
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
@@ -170,12 +182,16 @@ async def process_ex(message: types.Message):
 
 @dp.message_handler(state='*', content_types=types.ContentTypes.ANY)
 async def process_unknown_types(message: types.Message):
+    '''Handle non-text messages'''
+
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     msg = 'Я умею отвечать только не текстовые сообщения. Напиши что-нибудь ещё.'
     await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
 
 
 async def find_similar_action(message: types.Message):
+    '''Interaction functionality: memes, motivation quotes and voices, exercise advices.'''
+
     vec = await preprocess_input(message.text)
 
     for w in ['мем', 'шут', 'прикол']:
