@@ -31,8 +31,36 @@ class BotStates(StatesGroup):
     ex_state = State()
 
 
-@dp.message_handler(commands=['start'])
+@dp.message_handler(commands=['info'], state='*')
+async def print_workout_stats(message: types.Message):
+    global workout_data, curr_ex
+
+    if 'start_time' in workout_data:
+        end_time = workout_data.get('end_time', datetime.now())
+        wout_dur = (end_time - workout_data['start_time']).seconds
+        ex_durs = []
+        ex_trips = []
+        for key, value in workout_data.items():
+            if key.startswith('Упражнение'):
+                ex_end_time = value.get('end_time', datetime.now())
+                ex_durs.append((ex_end_time - value['start_time']).seconds)
+                ex_trips.extend(value['Подходы'])
+        avg_ex_dur = sum(ex_durs) / len(ex_durs) if len(ex_durs) > 0 else 0
+        avg_ex_trips = sum(ex_trips) / len(ex_trips) if len(ex_trips) > 0 else 0
+
+        msg = f'Всего упражнений: {curr_ex}\nОбщая продолжительность: {wout_dur // 60}m {wout_dur % 60}s\nСреднее кол-во повторений: {avg_ex_trips:.1f}\nСредняя продолжительность упражнения: {int(avg_ex_dur // 60)}m {int(avg_ex_dur % 60)}s'
+        await bot.send_message(message.from_user.id, msg)
+    
+    else:
+        msg = 'Тренировка ещё не началась.'
+        await bot.send_message(message.from_user.id, msg)
+
+
+@dp.message_handler(commands=['start'], state='*')
 async def process_command_start(message: types.Message):
+    global workout_data, curr_ex
+    workout_data = {}
+    curr_ex = 0
     intro = 'Привет! Меня зовут Ронни и я помогу тебе записывать прогресс на своей тренировке. Начнём?'
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -43,9 +71,15 @@ async def process_command_start(message: types.Message):
     await BotStates.waiting_state.set()
 
 
+@dp.message_handler()
+async def echo_message(message: types.Message):
+    msg = 'Введите /start'
+    await bot.send_message(message.from_user.id, msg)
+
+
 @dp.message_handler(state=BotStates.waiting_state)        
 async def process_waiting(message: types.Message):
-    msg = 'Отлично! Ты можешь начать тренировку, а также попросить меня смотивировать тебя или развеселить мемасиком.'
+    msg = 'Отлично! Ты можешь начать тренировку, попросить посоветовать упражнение, а также смотивировать тебя или развеселить мемасиком.'
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = ['Начать тренировку']
@@ -57,10 +91,12 @@ async def process_waiting(message: types.Message):
 
 @dp.message_handler(state=BotStates.doing_nothing_state)
 async def process_doing_nothing(message: types.Message):
-    global workout_data
+    global workout_data, curr_ex
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
     if message.text == 'Начать тренировку':
+        curr_ex = 0
+        workout_data = {}
         st_time = datetime.now()
         msg = f'Yeaaaaahh buddy!\nНачало: {st_time.strftime("%d-%m-%Y %H:%M:%S")}'
         workout_data['start_time'] = st_time
@@ -80,9 +116,6 @@ async def process_workout(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
     if message.text == 'Новое упражнение':
-        curr_ex = 0
-        workout_data = {}
-
         curr_ex += 1
         st_time = datetime.now()
         workout_data[f'Упражнение №{curr_ex}'] = {'start_time': st_time, 'Подходы': []}
@@ -98,7 +131,7 @@ async def process_workout(message: types.Message):
         workout_data['end_time'] = datetime.now()
         dur = (workout_data['end_time'] - workout_data['start_time']).seconds
         msg = f'Тренировка закончена! Продолжительность: {dur // 60}m {dur % 60}s\nТы сегодня хорошо потрудился!'
-        buttons = ['Начать тренировку']
+        buttons = ['Новая тренировка']
         keyboard.add(*buttons)
 
         await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
@@ -135,6 +168,13 @@ async def process_ex(message: types.Message):
         await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
 
 
+@dp.message_handler(state='*', content_types=types.ContentTypes.ANY)
+async def process_unknown_types(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    msg = 'Я умею отвечать только не текстовые сообщения. Напиши что-нибудь ещё.'
+    await bot.send_message(message.from_user.id, msg, reply_markup=keyboard)
+
+
 async def find_similar_action(message: types.Message):
     vec = await preprocess_input(message.text)
 
@@ -165,6 +205,11 @@ async def find_similar_action(message: types.Message):
             ex = random.choice(all_exercises[group])
             msg = f'Упражнение на {group.lower()}: {ex}'
             await bot.send_message(message.from_user.id, msg)
+
+    for w in ['инф', 'результ', 'статист']:
+        if any(map(lambda x: w in x, vec)):
+            await print_workout_stats(message)
+            return
 
 
 async def preprocess_input(text):
