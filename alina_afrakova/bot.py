@@ -53,6 +53,7 @@ async def process_help_command(message: types.Message):
     answer = """
 /start - начало работы
 /exit - выход в главное меню
+/help - список команд
     """
     await bot.send_message(message.from_user.id, answer)
 
@@ -87,7 +88,7 @@ async def echo_message(message: types.Message):
 async def start_work(message: types.Message):
     text = parse(message.text)
     if text in BUTTONS[0]:
-        answer = 'Выбирай категорию задач:'
+        answer = 'Выбирай категорию задач.'
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
         buttons = math_database.get_possible_categories()
         keyboard.add(*buttons)
@@ -133,7 +134,7 @@ async def choose_math_category(message: types.Message):
             await BotStates.test_math.set()
         else:
             if not math_database.curr_choices:
-                answer = 'Выбирай категорию задач:'
+                answer = 'Выбирай категорию задач.'
             else:
                 answer = f'Выбирай подкатегорию задач "{math_database.get_choices()}".'
                 buttons.append('назад')
@@ -156,7 +157,7 @@ async def test_math_problems(message: types.Message):
         math_database.del_last_choice()
         buttons = math_database.get_possible_categories()
         if not math_database.curr_choices:
-            answer = 'Выбирай категорию задач:'
+            answer = 'Выбирай категорию задач.'
         else:
             answer = f'Выбирай подкатегорию задач "{math_database.get_choices()}".'
             buttons.append('назад')

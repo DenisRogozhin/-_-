@@ -41,7 +41,7 @@ class MathDatabase:
         category = self.get_choosen_category()
         if isinstance(category, str):
             return category
-        return category.keys()
+        return list(category.keys())
         
     def get_problem(self, category: str = None) -> Tuple[str, str]:
         if self.data is None:
