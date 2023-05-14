@@ -126,14 +126,20 @@ UDPipe может лемматизировать слова, но самое и�
         response_result = self.model.get_response(message.text)
         parse_result = self.model.parse_result(response_result)
         answer = pretty_print(parse_result, "cut")
-        await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        buttons = ["Вернуться в главное меню"]
+        keyboard.add(*buttons)
+        await self.bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
         await BotStates.waiting_state.set()
 
     async def lemma(self, message: types.Message, state: FSMContext):
         response_result = self.model.get_response(message.text)
         parse_result = self.model.parse_result(response_result)
         answer = pretty_print(parse_result, "lemma")
-        await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        buttons = ["Вернуться в главное меню"]
+        keyboard.add(*buttons)
+        await self.bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
         await BotStates.waiting_state.set()
 
     async def tonality(self, message: types.Message, state: FSMContext):
@@ -147,7 +153,10 @@ UDPipe может лемматизировать слова, но самое и�
         mark = self.classifier.predict([content], True)
 
         answer = tonality_print(mark)
-        await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        buttons = ["Вернуться в главное меню"]
+        keyboard.add(*buttons)
+        await self.bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
         await BotStates.waiting_state.set()
 
     async def unknown_message(self, message: types.Message):
