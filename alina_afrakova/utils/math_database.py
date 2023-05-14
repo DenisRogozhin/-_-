@@ -30,7 +30,7 @@ class MathDatabase:
         return ' -> '.join(self.curr_choices)
 
     def get_choosen_category(self):
-        category = self.dataset_config
+        category = self.dataset_configs
         for choice in self.curr_choices: 
             category = category[choice]
         return category
