@@ -16,7 +16,6 @@ class BotStates(StatesGroup):
     lemma_state = State()
     cut_down_state = State()
     tonality_state = State()
-    more_info_state = State()
 
 
 class UDPipeBot:
@@ -42,21 +41,20 @@ class UDPipeBot:
 
     async def process_help_command(self, message: types.Message):
         answer = """
-            /start - начало работы
-            /exit - выход в меню выбора
+/start - начало работы
+/exit - выход в меню выбора
         """
         await self.bot.send_message(message.from_user.id, answer)
 
     async def process_start_command(self, message: types.Message):
-        # await message.reply("Hello wolrd!")
         init_msg = """
-            Привет! Я бот, который поможет разобраться с UDPipe.
+Привет! Я бот, который поможет разобраться с UDPipe.
 
-            Вот что умею:
-            1) Сократить текст, оставить только главные слова
-            2) Лемматизировать текст
-            3) Определить тональность текста 
-            4) Подсказать как устроены мои команды
+Вот что умею:
+1) Сократить текст, оставить только главные слова
+2) Лемматизировать текст
+3) Определить тональность текста 
+4) Подсказать как устроены мои команды
         """
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
         buttons = ["Сокращение", "Лемматизация", "Тональность", "Подробнее"]
@@ -78,7 +76,7 @@ class UDPipeBot:
 
     async def choose_type(self, message: types.Message, state: FSMContext):
         text = message.text
-        if text not in ["Сокращение", "Лемматизация", "Тональность", "Подробнее"]:
+        if text not in ["Сокращение", "Лемматизация", "Тональность", "Подробнее", "Вернуться в главное меню"]:
             answer = "Кажется, я не понял"
             await self.bot.send_message(message.from_user.id, answer)
             answer = "Хотите перейти к сокращению, лемматизации, тональности или узнать подробности моей работы?"
@@ -88,34 +86,55 @@ class UDPipeBot:
             await self.bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
         elif text == "Сокращение":
             answer = "Действительно интересная особенность UDPipe. Введите текст: "
-            await self.bot.send_message(message.from_user.id, answer)
+            await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
             await BotStates.cut_down_state.set()
         elif text == "Лемматизация":
             answer = "Механизм UDPipe, никакого PyMorphy. Введите текст: "
-            await self.bot.send_message(message.from_user.id, answer)
+            await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
             await BotStates.lemma_state.set()
         elif text == "Тональность":
             answer = "Определение тональности текста с помощью простых методов ML. Введите текст: "
             await self.bot.send_message(message.from_user.id, answer)
             await BotStates.tonality_state.set()
         elif text == "Подробнее":
-            answer = "Сейчас расскажу"
-            await self.bot.send_message(message.from_user.id, answer)
-            await BotStates.more_info_state.set()
+            answer = """
+UDPipe может лемматизировать слова, но самое интересное - он умеет строить дерево зависимостей между ними. 
+То есть у каждого слова можно определить потомка и родителя. 
+
+Именно благодаря этому механизму и была прописана функция сокращения. 
+Если у слова более 1 потомка, то это важное слово, иначе его можно выкинуть. 
+
+Лемматизация работает хуже, чем PyMorphy, но зато быстрее, так как используются простые алгоритмы. 
+
+С предсказанием тональности всё интереснее. 
+Меня обучили на корпусе отзывов кинопоиска, поэтому я хорошо разбираюсь в фильмах. 
+Однако, перед подачей текста в классификатор, происходит сокращение текста и лемматизация с помощью UDPipe.
+            """
+            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            buttons = ["Вернуться в главное меню"]
+            keyboard.add(*buttons)
+            await self.bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
+            await BotStates.waiting_state.set()
+        elif text == "Вернуться в главное меню":
+            answer = "Хотите перейти к сокращению, лемматизации, тональности или узнать подробности моей работы?"
+            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            buttons = ["Сокращение", "Лемматизация", "Тональность", "Подробнее"]
+            keyboard.add(*buttons)
+            await self.bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
 
     async def cut_down(self, message: types.Message, state: FSMContext):
         response_result = self.model.get_response(message.text)
         parse_result = self.model.parse_result(response_result)
         answer = pretty_print(parse_result, "cut")
         await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
-        await BotStates.cut_down_state.set()
+        await BotStates.waiting_state.set()
 
     async def lemma(self, message: types.Message, state: FSMContext):
         response_result = self.model.get_response(message.text)
         parse_result = self.model.parse_result(response_result)
         answer = pretty_print(parse_result, "lemma")
         await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
-        await BotStates.cut_down_state.set()
+        await BotStates.waiting_state.set()
 
     async def tonality(self, message: types.Message, state: FSMContext):
         response_result = self.model.get_response(message.text)
@@ -125,14 +144,14 @@ class UDPipeBot:
         for cur_msg in parse_result['main_words']:
             content += ' '.join(cur_msg) + '. '
 
-        mark = self.classifier.predict(content, True)
+        mark = self.classifier.predict([content], True)
 
         answer = tonality_print(mark)
         await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
-        await BotStates.cut_down_state.set()
+        await BotStates.waiting_state.set()
 
-    async def unknown_message(self, msg: types.Message):
-        await self.bot.send_message(msg.from_user.id, 'Я умею отвечать только на текстовые сообщения!')
+    async def unknown_message(self, message: types.Message):
+        await self.bot.send_message(message.from_user.id, 'Я умею отвечать только на текстовые сообщения!')
 
     def run(self):
         executor.start_polling(self.dp)
