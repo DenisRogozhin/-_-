@@ -24,19 +24,19 @@ math_solver = MathSolver()
 math_plot = MathPlot()
 
 
-def create_bot():
-    global dp, bot
 
-    env_file = '.env'
-    dotenv_path = os.path.join(os.path.dirname(__file__), env_file)
-    if not os.path.exists(dotenv_path):
-        sys.stderr(f'There is no enviroment file "{env_file}" with token')
-        sys.exit()
-    
-    load_dotenv(dotenv_path)
-    TOKEN = os.getenv('TOKEN')
-    bot = Bot(token=TOKEN)
-    dp = Dispatcher(bot, storage=MemoryStorage())
+
+
+env_file = '.env'
+dotenv_path = os.path.join(os.path.dirname(__file__), env_file)
+if not os.path.exists(dotenv_path):
+    sys.stderr(f'There is no enviroment file "{env_file}" with token')
+    sys.exit()
+   
+load_dotenv(dotenv_path)
+TOKEN = os.getenv('TOKEN')
+bot = Bot(token=TOKEN)
+dp = Dispatcher(bot, storage=MemoryStorage())
 
 
 class BotStates(StatesGroup):
@@ -209,5 +209,4 @@ async def plot_graphics(message: types.Message):
 
 
 if __name__ == '__main__':
-    create_bot()
     executor.start_polling(dp)
