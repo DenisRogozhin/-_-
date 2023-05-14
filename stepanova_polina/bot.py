@@ -11,7 +11,8 @@ import random
 
 
 
-Token='6193899482:AAE6-Q3OWuwpIGQx13FCW_n8beIcWbh87-Y'
+with open('Token.txt', 'r', encoding='utf-8') as ftoken:
+    Token= ftoken.read()
 
 bot=Bot(token=Token)
 dpr=Dispatcher(bot,storage=MemoryStorage())
