@@ -25,7 +25,7 @@ class Botstates(StatesGroup):
 
 
 with open('namegorod.txt', 'r', encoding='utf-8') as f:
-    true_names = f.read().split('\n')
+    true_names = f.read().split('\n')[:-1]
 g_vocab = [gn.lower() for gn in true_names]
 
 
@@ -199,6 +199,7 @@ async def proc_first_word(message: types.Message, state: FSMContext):
                 if (msg not in [en.lower() for en in     game_parameters_by_id[message.from_user.id].extra_names_learned]) and (   msg not in g_vocab):  # g_vocab - исходные имена из файла в ниж.регистре, чтоб не каждый раз переделывать список, который по определению никогда не меняется
                     game_parameters_by_id[message.from_user.id].extra_names_learned.append( message.text)  # запоминаем новое слово на будущее
                     game_parameters_by_id[message.from_user.id].leftover_names.append(message.text)
+                    game_parameters_by_id[message.from_user.id].user_names.append(msg)
                 ll_names = [gn for gn in game_parameters_by_id[message.from_user.id].leftover_names if  gn[0].lower() == msg[ll]]  # выбираем из своих по первой букве
                 if len(  ll_names) == 0:  # больше не знает слов на нужную букву - это и есть проигрыш, когда не можешь назвать не повторяясь слово
                     game_parameters_by_id[message.from_user.id].g_score[  0] += 1  # бот не смог найти слово - выиграл пользователь
@@ -282,10 +283,10 @@ async def proc_word_for_letter(message: types.Message, state: FSMContext):
                             await bot.send_message(message.from_user.id,     "Я знаю только слова на русском... Давайте какое-нибудь другое слово.",   reply_markup=keyboard)
                         # берем себе, генерим свое, поехали
                         else:
-                            if (msg not in [en.lower() for en in
-                                            game_parameters_by_id[message.from_user.id].extra_names_learned]) and (  msg not in g_vocab):  # используем тут, не из него берем то хоть на пользу пойдет, чтоб не каждый раз переделывать список, который по определению никогда не меняется
+                            if (msg not in [en.lower() for en in   game_parameters_by_id[message.from_user.id].extra_names_learned]) and (  msg not in g_vocab):  # используем тут, не из него берем то хоть на пользу пойдет, чтоб не каждый раз переделывать список, который по определению никогда не меняется
                                 game_parameters_by_id[message.from_user.id].extra_names_learned.append(message.text)
                                 game_parameters_by_id[message.from_user.id].leftover_names.append(message.text)
+                                game_parameters_by_id[message.from_user.id].user_names.append(msg)
                             ll_names = [gn for gn in game_parameters_by_id[message.from_user.id].leftover_names if
                                         gn[0].lower() == msg[ll]]  # выбираем из своих по первой букве
                             if len(ll_names) == 0:  # больше не знает слов на нужную букву
