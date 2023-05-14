@@ -22,7 +22,7 @@ def pretty_print(answer_dict: Dict[str, Any], print_type: str) -> str:
     elif print_type == "lemma":
         message = "Лемматизированный текст: \n"
         for cur_msg in answer_dict['lemmas']:
-            message += ' '.join(cur_msg) + '. '
+            message += ' '.join(cur_msg)
     else:
         message = ""
     return message

@@ -113,7 +113,7 @@ class UDPipeBot:
     async def lemma(self, message: types.Message, state: FSMContext):
         response_result = self.model.get_response(message.text)
         parse_result = self.model.parse_result(response_result)
-        answer = pretty_print(parse_result, "cut")
+        answer = pretty_print(parse_result, "lemma")
         await self.bot.send_message(message.from_user.id, answer, reply_markup=types.ReplyKeyboardRemove())
         await BotStates.cut_down_state.set()
 
@@ -123,8 +123,7 @@ class UDPipeBot:
 
         content = ""
         for cur_msg in parse_result['main_words']:
-            content += ' '.join(cur_msg)
-        content += '.'
+            content += ' '.join(cur_msg) + '. '
 
         mark = self.classifier.predict(content, True)
 
