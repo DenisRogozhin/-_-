@@ -9,7 +9,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils import executor
 import random
 
- with open('Token.txt', 'r',encoding='utf-8') as ftoken:
+with open('Token.txt', 'r',encoding='utf-8') as ftoken:
     Token= ftoken.read()
 
 
