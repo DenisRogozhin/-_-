@@ -1,5 +1,5 @@
 import pandas as pd
-from src.utils import clean_intent, imbalances
+from utils import clean_intent, imbalances
 
 
 class Preprocessing:

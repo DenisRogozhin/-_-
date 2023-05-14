@@ -1,6 +1,6 @@
-from src.bot import UDPipeBot
-from src.udpipe import Model
-from src.train_model import Classifier
+from bot import UDPipeBot
+from udpipe import Model
+from train_model import Classifier
 
 
 if __name__ == '__main__':

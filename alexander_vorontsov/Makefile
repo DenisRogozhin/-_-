@@ -19,15 +19,20 @@ dev.install:
 
 data.load:
 	echo "Download data"
-	python -m src.load_data
+	python -m src/load_data
 
 data.preprocessing:
 	echo "Preprocessing data"
-	python -m src.preprocessing
+	python -m src/preprocessing
 
 dev.run: dev.install data.load data.preprocessing lint test
 	echo "Run build"
-	python src.main.py
+	python src/main.py
+
 fast.run: dev.install
 	echo "Run bot"
-	python src.main.py
+	python src/main.py
+
+run:
+	echo "Run bot"
+	python src/main.py

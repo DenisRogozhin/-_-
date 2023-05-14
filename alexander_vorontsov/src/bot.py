@@ -5,9 +5,9 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.utils import executor
 
-from src.udpipe import Model
-from src.train_model import Classifier
-from src.utils import pretty_print, tonality_print
+from udpipe import Model
+from train_model import Classifier
+from utils import pretty_print, tonality_print
 
 
 class BotStates(StatesGroup):

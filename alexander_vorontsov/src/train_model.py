@@ -17,12 +17,12 @@ class Classifier:
     ):
         self.train_file_name = train_file_name
         self.test_file_name = test_file_name
-        self.vectorizer = TfidfVectorizer() if new_init else pickle.load(open('./../data/vectorizer.pickle', 'rb'))
-        self.label_encoder = LabelEncoder() if new_init else pickle.load(open('./../data/label_encoder.pickle', 'rb'))
+        self.vectorizer = TfidfVectorizer() if new_init else pickle.load(open('./data/vectorizer.pickle', 'rb'))
+        self.label_encoder = LabelEncoder() if new_init else pickle.load(open('./data/label_encoder.pickle', 'rb'))
         self.model = LogisticRegression(
             multi_class='multinomial',
             solver='lbfgs'
-        ) if new_init else pickle.load(open('./../data/model.pickle', 'rb'))
+        ) if new_init else pickle.load(open('./data/model.pickle', 'rb'))
         self.text_column = text_column
         self.ans_column = ans_column
 
@@ -52,6 +52,6 @@ class Classifier:
 
 
 if __name__ == '__main__':
-    cls = Classifier()
+    cls = Classifier(True)
     cls.train()
     cls.save()
