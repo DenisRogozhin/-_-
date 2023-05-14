@@ -8,6 +8,7 @@ class Model:
     def __init__(self, model: str = "model=russian-gsd-ud-2.10-220711"):
         self.api = "http://lindat.mff.cuni.cz/services/udpipe/api/process?"
         self.tokenizer = "tokenizer&"
+        self.tagger = "tagger&"
         self.parser = "parser&"
         self.model = model + "&"
 
@@ -15,12 +16,15 @@ class Model:
             self,
             message: str,
             tokenizer: bool = True,
+            tagger: bool = True,
             parser: bool = True,
             model: bool = True
     ) -> str:
         url = self.api
         if tokenizer:
             url += self.tokenizer
+        if tagger:
+            url += self.tagger
         if parser:
             url += self.parser
         if model:

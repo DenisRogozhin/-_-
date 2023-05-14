@@ -18,13 +18,11 @@ def pretty_print(answer_dict: Dict[str, Any], print_type: str) -> str:
     if print_type == "cut":
         message = "Сокращённый текст: \n"
         for cur_msg in answer_dict['main_words']:
-            message += ' '.join(cur_msg)
-        message += '.'
+            message += ' '.join(cur_msg) + '. '
     elif print_type == "lemma":
         message = "Лемматизированный текст: \n"
         for cur_msg in answer_dict['lemmas']:
-            message += ' '.join(cur_msg)
-        message += '.'
+            message += ' '.join(cur_msg) + '. '
     else:
         message = ""
     return message
