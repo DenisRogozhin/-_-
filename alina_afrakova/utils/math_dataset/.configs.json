@@ -1,0 +1,38 @@
+{
+    "1-4-ые классы": "easy_math_problems.csv",
+    "арифметика": {
+        "сумма и разность": {
+            "в 10-ной СЧ": "arithmetic__add_or_sub.txt",
+            "в разных CЧ": "arithmetic__add_or_sub_in_base.txt"
+        },
+        "выражение": {
+            "только сумма и разность": "arithmetic__add_sub_multiple.txt",
+            "все операции": "arithmetic__mixed.txt"
+        },
+        "упростить выражение": "arithmetic__simplify_surd.txt",
+        "НОД": "numbers__gcd.txt",
+        "следующ. в последовательности": "algebra__sequence_next_term.txt"
+    },
+    "сравнения": {
+        "ближайший": "comparison__closest.txt",
+        "сравнение пар чисел": "comparison__pair.txt",
+        "наибольшее / наименьшее": "comparison__kth_biggest.txt"
+    },
+    "алгебра": {
+        "линейные уравнения": {
+            "с 1 переменной": "algebra__linear_1d.txt",
+            "с 2 переменными": "algebra__linear_2d.txt"
+        },
+        "полиномы": {
+            "решение уравнений": "algebra__polynomial_roots.txt",
+            "вычислить значение": "polynomials__evaluate.txt",
+            "упростить выражение": "polynomials__collect.txt",
+            "раскрыть скобки": "polynomials__expand.txt"
+        }
+    },
+    "вероятность": {
+        "получения количества": "probability__swr_p_level_set.txt",
+        "получения последовательности": "probability__swr_p_sequence.txt"
+    }
+    
+}
