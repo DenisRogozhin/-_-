@@ -46,7 +46,7 @@ class MathDatabase:
     def get_problem(self, category: str = None) -> Tuple[str, str]:
         if self.data is None:
             if category is None: category = self.get_choosen_category()
-            self.data = self.load(category)
+            self.data = self.load_file(category)
         self.curr_problem = random.choice(self.data)
         return self.curr_problem[0]
     
