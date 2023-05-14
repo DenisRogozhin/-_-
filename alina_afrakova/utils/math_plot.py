@@ -61,7 +61,7 @@ class MathPlot:
         self.ax.plot((1), (0), marker='>', transform=self.ax.get_yaxis_transform(), **arrow_fmt)
         self.ax.plot((0), (1), marker='^', transform=self.ax.get_xaxis_transform(), **arrow_fmt)
 
-        path = os.path.join(os.path.dirname(__file__), 'utils')
+        path = os.path.join(os.path.dirname(__file__), path)
         self.fig.savefig(path, dpi=300)
 
         return path
