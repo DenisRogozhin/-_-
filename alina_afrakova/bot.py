@@ -169,7 +169,7 @@ async def test_math_problems(message: types.Message):
     if text == 'хочу другую':
         answer = math_database.get_problem()
     else:
-        answer = math_database.get_answer(text)
+        answer = math_database.get_answer()
         if answer != text:
             answer = random.choice(NEG_ANSWERS) + ' Попробуй еще раз.'
         else:
