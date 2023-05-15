@@ -17,9 +17,9 @@ class MathPlot:
         if not '=' in expression: return 'ERROR'
         y, expression = map(str.strip, expression.split('='))
 
-        x = re.search('[a-z]', expression)
+        x = re.search(r'(?<=[^a-z])[a-z](?=[^a-z])', ' '+expression+' ')
         if not x: return 'ERROR'
-        x = expression[x.start() : x.end()]
+        x = expression[x.start() - 1]
         expression = solver.solve(expression, return_str=False)
 
         xmin, xmax, ymin, ymax = -10, 10, -10, 10
