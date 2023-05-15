@@ -29,7 +29,7 @@ class MathPlot:
         ys = []
         for x_value in xs:
             try:
-                ys.append(float(expression.subs(x, x_value)))
+                ys.append(float(expression.subs(x, x_value).evalf()))
             except Exception as exc:
                 return 'ERROR'
 
