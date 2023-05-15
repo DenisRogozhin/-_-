@@ -22,20 +22,21 @@ class MathPlot:
         x = expression[x.start() : x.end()]
         expression = solver.solve(expression, return_str=False)
 
-        xs = np.range(-20, 20.1, 0.1)
+        xmin, xmax, ymin, ymax = -10, 10, -10, 10
+        step = 0.25
+        
+        xs = np.arange(xmin, xmax + step, step)
         ys = []
         for x_value in xs:
             try:
-                ys.append(expression.subs(x, x_value))
+                ys.append(float(expression.subs(x, x_value)))
             except Exception as exc:
                 return 'ERROR'
 
         if self.fig is None:
-            self.fig, self.ax = plt.subplots(figsize=(15, 15))
+            self.fig, self.ax = plt.subplots(figsize=(10, 10))
 
-        self.ax.scatter(xs, ys, '-.', label=f'{y} = {str(expression)}')
-
-        xmin, xmax, ymin, ymax = -20, 20, -20, 20
+        self.ax.plot(xs, ys, '.-', label=f'{y} = {str(expression)}')
 
         self.ax.set(xlim=(xmin-1, xmax+1), ylim=(ymin-1, ymax+1), aspect='equal')
 
