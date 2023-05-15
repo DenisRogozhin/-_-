@@ -166,9 +166,9 @@ async def test_math_problems(message: types.Message):
         await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
         await BotStates.choose_category.set()
         return
-    if text == 'хочу другую':
+    if text in 'хочу другую' or text in ['еще', 'ещё']:
         answer = math_database.get_problem()
-    elif text == 'покажи ответ':
+    elif text in 'покажи ответ' or text in ['сдаюсь', 'не знаю']:
         answer = 'Ответ: ' + math_database.get_answer()
     else:
         answer = math_database.get_answer()
