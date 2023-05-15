@@ -201,7 +201,7 @@ async def plot_graphics(message: types.Message):
         answer = f'К сожалению, я еще не умею строить такие графики {emoji.emojize(":frowning_face:")}.'
         await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
     else:
-        await bot.send_photo(message.from_user.id, photo=open('path', 'rb'))
+        await bot.send_photo(message.from_user.id, photo=open(img_path, 'rb'))
 
 @dp.message_handler(state='*', content_types=types.ContentType.ANY)
 async def process_unknown_message(message: types.Message):
