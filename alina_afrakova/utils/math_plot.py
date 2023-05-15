@@ -13,11 +13,11 @@ class MathPlot:
     def clear_plot(self):
         self.fig = None
         
-    def plot(self, expression: str, solver: MathSolver, path: str = 'plot.png') -> None:
+    def plot(self, expression: str, solver: MathSolver, path: str = 'plot.png') -> str:
         if not '=' in expression: return 'ERROR'
         y, expression = map(str.strip, expression.split('='))
 
-        x = re.search('[a-zA-Z]', expression)
+        x = re.search('[a-z]', expression)
         if not x: return 'ERROR'
         x = expression[x.start() : x.end()]
         expression = solver.solve(expression, return_str=False)

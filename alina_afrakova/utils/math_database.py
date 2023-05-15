@@ -36,8 +36,6 @@ class MathDatabase:
         return category
 
     def get_possible_categories(self):
-        if not self.curr_choices:
-            return self.dataset_configs.keys()
         category = self.get_choosen_category()
         if isinstance(category, str):
             return category
@@ -48,7 +46,7 @@ class MathDatabase:
             if category is None: category = self.get_choosen_category()
             self.data = self.load_file(category)
         self.curr_problem = random.choice(self.data)
-        return self.curr_problem[0]
+        return self.curr_problem[0].lstrip()
     
     def get_answer(self):
         return self.curr_problem[1]

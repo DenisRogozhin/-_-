@@ -57,7 +57,7 @@ async def process_help_command(message: types.Message):
     """
     await bot.send_message(message.from_user.id, answer)
 
-@dp.message_handler(commands=['start'])
+@dp.message_handler(commands=['start'], state='*')
 async def process_start_command(message: types.Message):
     await message.reply(f"Приветствую Тебя! Я математический бот {emoji.emojize(':input_numbers:')}.")
     answer = "Выбирай, какой опцией хочешь воспользоваться."
@@ -68,7 +68,7 @@ async def process_start_command(message: types.Message):
     await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
     await BotStates.waiting_state.set()
 
-@dp.message_handler(commands=['exit'])
+@dp.message_handler(commands=['exit'], state='*')
 async def process_exit_command(message: types.Message):
     await message.reply(f"Возвращаю в главное меню.")
     answer = "Выбирай, какой опцией хочешь воспользоваться."
@@ -128,7 +128,7 @@ async def choose_math_category(message: types.Message):
             category = buttons
             math_problem = math_database.get_problem(category)
             keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            buttons = ['хочу другую', 'назад']
+            buttons = ['хочу другую', 'покажи ответ', 'назад']
             keyboard.add(*buttons)
             await bot.send_message(message.from_user.id, math_problem, reply_markup=keyboard)
             await BotStates.test_math.set()
@@ -168,14 +168,18 @@ async def test_math_problems(message: types.Message):
         return
     if text == 'хочу другую':
         answer = math_database.get_problem()
+    elif text == 'покажи ответ':
+        answer = 'Ответ: ' + math_database.get_answer()
     else:
-        answer = math_database.get_answer(text)
-        if answer != text:
-            answer = random.choice(NEG_ANSWERS) + ' Попробуй еще раз.'
-        else:
+        answer = math_database.get_answer()
+        if answer == text or \
+            answer.lower() == 'true' and text in ['true', 'да', 'правда', 'верно'] or \
+            answer.lower() == 'false' and text in ['false', 'нет', 'ложь', 'не верно']:
             answer = random.choice(POS_ANSWERS)
+        else:
+            answer = random.choice(NEG_ANSWERS) + ' Попробуй еще раз.'
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons = ['хочу другую', 'назад']
+    buttons = ['хочу другую', 'покажи ответ', 'назад']
     keyboard.add(*buttons)
     await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
 
@@ -199,7 +203,7 @@ async def plot_graphics(message: types.Message):
         answer = f'К сожалению, я еще не умею строить такие графики {emoji.emojize(":frowning_face:")}.'
         await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
     else:
-        await bot.send_photo(message.from_user.id, photo=open('path', 'rb'))
+        await bot.send_photo(message.from_user.id, photo=open(img_path, 'rb'))
 
 @dp.message_handler(state='*', content_types=types.ContentType.ANY)
 async def process_unknown_message(message: types.Message):
