@@ -128,7 +128,7 @@ async def choose_math_category(message: types.Message):
             category = buttons
             math_problem = math_database.get_problem(category)
             keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            buttons = ['хочу другую', 'назад']
+            buttons = ['хочу другую', 'покажи ответ', 'назад']
             keyboard.add(*buttons)
             await bot.send_message(message.from_user.id, math_problem, reply_markup=keyboard)
             await BotStates.test_math.set()
@@ -168,6 +168,8 @@ async def test_math_problems(message: types.Message):
         return
     if text == 'хочу другую':
         answer = math_database.get_problem()
+    elif text == 'покажи ответ':
+        answer = 'Ответ: ' + math_database.get_answer()
     else:
         answer = math_database.get_answer()
         if answer == text or \
@@ -177,7 +179,7 @@ async def test_math_problems(message: types.Message):
         else:
             answer = random.choice(NEG_ANSWERS) + ' Попробуй еще раз.'
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons = ['хочу другую', 'назад']
+    buttons = ['хочу другую', 'покажи ответ', 'назад']
     keyboard.add(*buttons)
     await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
 
