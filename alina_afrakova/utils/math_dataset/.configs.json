@@ -2,15 +2,15 @@
     "1-4-ые классы": "easy_math_problems.csv",
     "арифметика": {
         "сумма и разность": {
-            "в 10-ной СЧ": "arithmetic__add_or_sub.txt",
-            "в разных CЧ": "arithmetic__add_or_sub_in_base.txt"
+            "в 10-ной системе сч.": "arithmetic__add_or_sub.txt",
+            "в разных системе сч.": "arithmetic__add_or_sub_in_base.txt"
         },
         "выражение": {
             "только сумма и разность": "arithmetic__add_sub_multiple.txt",
             "все операции": "arithmetic__mixed.txt"
         },
         "упростить выражение": "arithmetic__simplify_surd.txt",
-        "НОД": "numbers__gcd.txt",
+        "нод": "numbers__gcd.txt",
         "следующ. в последовательности": "algebra__sequence_next_term.txt"
     },
     "сравнения": {
