@@ -102,7 +102,7 @@ async def start_work(message: types.Message):
         await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
         await BotStates.solve_math.set()
     elif text in BUTTONS[2]:
-        answer = 'Введи уравнение графика функции в виде: y = x + 2, или q = w^2 + 2w - 1.'
+        answer = 'Введи уравнение графика функции в виде: y = x + 2, или q = w^2 + 2w - 1, или y = exp(x/2) + sin(x).'
         keyboard = types.ReplyKeyboardRemove()
         await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
         await BotStates.plot_math.set()
