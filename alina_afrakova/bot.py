@@ -173,6 +173,7 @@ async def test_math_problems(message: types.Message):
         if answer == text or \
             answer.lower() == 'true' and text in ['true', 'да', 'правда', 'верно'] or \
             answer.lower() == 'false' and text in ['false', 'нет', 'ложь', 'не верно']:
+            answer = random.choice(POS_ANSWERS)
         else:
             answer = random.choice(NEG_ANSWERS) + ' Попробуй еще раз.'
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
