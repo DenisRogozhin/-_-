@@ -57,8 +57,8 @@ class MathDatabase:
         file_ext = os.path.splitext(file_name)[-1]
         with open(os.path.join(self.dataset_path, file_name), 'r', encoding='utf-8') as text_file:
             if file_ext == '.csv':
-                csv_reader = csv.reader(text_file, delimiter='\t', quotechar="'")
-                data = [(f"{row[0]} {row[1]}", row[2]) for row in csv_reader]
+                csv_reader = csv.reader(text_file, delimiter='\t', quotechar="'", quoting=csv.QUOTE_MINIMAL)
+                data = [(f"{row[0].strip()} {row[1].strip()}", row[2]) for row in csv_reader]
             else:
                 text = text_file.read().splitlines()
                 questions, answers = text[::2], text[1::2]
