@@ -57,7 +57,7 @@ async def process_help_command(message: types.Message):
     """
     await bot.send_message(message.from_user.id, answer)
 
-@dp.message_handler(commands=['start'])
+@dp.message_handler(commands=['start'], state='*')
 async def process_start_command(message: types.Message):
     await message.reply(f"Приветствую Тебя! Я математический бот {emoji.emojize(':input_numbers:')}.")
     answer = "Выбирай, какой опцией хочешь воспользоваться."
@@ -68,7 +68,7 @@ async def process_start_command(message: types.Message):
     await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
     await BotStates.waiting_state.set()
 
-@dp.message_handler(commands=['exit'])
+@dp.message_handler(commands=['exit'], state='*')
 async def process_exit_command(message: types.Message):
     await message.reply(f"Возвращаю в главное меню.")
     answer = "Выбирай, какой опцией хочешь воспользоваться."
@@ -170,10 +170,11 @@ async def test_math_problems(message: types.Message):
         answer = math_database.get_problem()
     else:
         answer = math_database.get_answer()
-        if answer != text:
-            answer = random.choice(NEG_ANSWERS) + ' Попробуй еще раз.'
+        if answer == text or \
+            answer.lower() == 'true' and text in ['true', 'да', 'правда', 'верно'] or \
+            answer.lower() == 'false' and text in ['false', 'нет', 'ложь', 'не верно']:
         else:
-            answer = random.choice(POS_ANSWERS)
+            answer = random.choice(NEG_ANSWERS) + ' Попробуй еще раз.'
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = ['хочу другую', 'назад']
     keyboard.add(*buttons)
