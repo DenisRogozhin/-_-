@@ -9,6 +9,9 @@ import pandas as pd
 df = pd.read_csv("games.csv") # БД с играми
 games_num = len(df)           # количество игор в игротеке
 
+with open("TOKEN") as f:
+    TOKEN = f.read()
+
 TXT_greet_1 = "Привет! Я - чат-бот, созданный, чтобы помочь с выбором настольной игры. Начинаем!"
 TXT_greet_2 = f"""Позвольте представиться надлежащим образом...
 Я владею архивом, небольшой базой данных из {games_num} игр. Буду искать в ней игры, которые больше подходят именно вам. Для этого мне придется немного пораспрашивать вас.
@@ -92,9 +95,6 @@ def get_best(game):
     
     return f'Игра {name}\nНа {t_min}-{t_max} минут\nДля {p_min}-{p_max} игроков\nСложность: {l}\nЖанр: {t}\n\nОписание:\n{ann}'
 
-
-with open("TOKEN") as f:
-    TOKEN = f.read()
 
 class BotStates(StatesGroup):
     start_state = State()
