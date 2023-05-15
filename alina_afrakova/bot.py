@@ -24,15 +24,12 @@ math_solver = MathSolver()
 math_plot = MathPlot()
 
 
-
-
-
 env_file = '.env'
 dotenv_path = os.path.join(os.path.dirname(__file__), env_file)
 if not os.path.exists(dotenv_path):
     sys.stderr(f'There is no enviroment file "{env_file}" with token')
     sys.exit()
-   
+
 load_dotenv(dotenv_path)
 TOKEN = os.getenv('TOKEN')
 bot = Bot(token=TOKEN)
@@ -56,13 +53,14 @@ async def process_help_command(message: types.Message):
     answer = """
 /start - начало работы
 /exit - выход в главное меню
+/help - список команд
     """
     await bot.send_message(message.from_user.id, answer)
 
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
-    await message.reply(f"Приветствую Тебя! Я математический бот {emoji.emojize(':input_numbers:')}")
-    answer = "Выбирай, какой опцией хочешь воспользоваться"
+    await message.reply(f"Приветствую Тебя! Я математический бот {emoji.emojize(':input_numbers:')}.")
+    answer = "Выбирай, какой опцией хочешь воспользоваться."
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = BUTTONS
     keyboard.add(*buttons)
@@ -72,8 +70,8 @@ async def process_start_command(message: types.Message):
 
 @dp.message_handler(commands=['exit'])
 async def process_exit_command(message: types.Message):
-    await message.reply(f"Возвращаю в главное меню")
-    answer = "Выбирай, какой опцией хочешь воспользоваться"
+    await message.reply(f"Возвращаю в главное меню.")
+    answer = "Выбирай, какой опцией хочешь воспользоваться."
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = BUTTONS
     keyboard.add(*buttons)
@@ -83,18 +81,14 @@ async def process_exit_command(message: types.Message):
     
 @dp.message_handler()
 async def echo_message(message: types.Message):
-    answer = "Введите команду /start"
+    answer = "Введите команду /start."
     await bot.send_message(message.from_user.id, answer)
-
-@dp.message_handler(state='*', content_types=types.ContentType.ANY)
-async def process_unknown_message(message: types.Message):
-    await message.answer(f"Я тебя не понимаю {emoji.emojize(':crying_face:')}, не могу обработать это сообщение.")
 
 @dp.message_handler(state=BotStates.waiting_state)
 async def start_work(message: types.Message):
     text = parse(message.text)
     if text in BUTTONS[0]:
-        answer = 'Выбирай категорию задач:'
+        answer = 'Выбирай категорию задач.'
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
         buttons = math_database.get_possible_categories()
         keyboard.add(*buttons)
@@ -108,14 +102,14 @@ async def start_work(message: types.Message):
         await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
         await BotStates.solve_math.set()
     elif text in BUTTONS[2]:
-        answer = 'Введи уравнение графика функции в виде: y = x + 2, или q = w^2 + 2w - 1'
+        answer = 'Введи уравнение графика функции в виде: y = x + 2, или q = w^2 + 2w - 1.'
         keyboard = types.ReplyKeyboardRemove()
         await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
         await BotStates.plot_math.set()
     else:
         answer = f"Я тебя не понимаю {emoji.emojize(':crying_face:')}, \
 не могу обработать это сообщение или еще не умею такое делать."
-        answer += "\nПожалуйста, выбери из предложенных вариантов"
+        answer += "\nПожалуйста, выбери из предложенных вариантов."
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
         buttons = BUTTONS
         keyboard.add(*buttons)
@@ -140,9 +134,9 @@ async def choose_math_category(message: types.Message):
             await BotStates.test_math.set()
         else:
             if not math_database.curr_choices:
-                answer = 'Выбирай категорию задач:'
+                answer = 'Выбирай категорию задач.'
             else:
-                answer = f'Выбирай подкатегорию задач "{math_database.get_choices()}":'
+                answer = f'Выбирай подкатегорию задач "{math_database.get_choices()}".'
                 buttons.append('назад')
             keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
             keyboard.add(*buttons)
@@ -150,7 +144,7 @@ async def choose_math_category(message: types.Message):
     else:
         answer = f"Я тебя не понимаю {emoji.emojize(':crying_face:')}, \
 не могу обработать это сообщение или не знаю такой категории."
-        answer += "\nПожалуйста, выбери из предложенных вариантов"
+        answer += "\nПожалуйста, выбери из предложенных вариантов."
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
         buttons = math_database.get_possible_categories()
         keyboard.add(*buttons)
@@ -163,9 +157,9 @@ async def test_math_problems(message: types.Message):
         math_database.del_last_choice()
         buttons = math_database.get_possible_categories()
         if not math_database.curr_choices:
-            answer = 'Выбирай категорию задач:'
+            answer = 'Выбирай категорию задач.'
         else:
-            answer = f'Выбирай подкатегорию задач "{math_database.get_choices()}":'
+            answer = f'Выбирай подкатегорию задач "{math_database.get_choices()}".'
             buttons.append('назад')
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
         keyboard.add(*buttons)
@@ -190,7 +184,7 @@ async def solve_math_problems(message: types.Message):
     text = parse(message.text)
     answer = math_solver.solve(text)
     if answer == 'ERROR':
-        answer = f'К сожалению, я еще не умею такое решать {emoji.emojize(":frowning_face:")}'
+        answer = f'К сожалению, я еще не умею такое решать {emoji.emojize(":frowning_face:")}.'
     else:
         answer = f'Ответ: {answer}'
     keyboard = types.ReplyKeyboardRemove()
@@ -202,10 +196,14 @@ async def plot_graphics(message: types.Message):
     keyboard = types.ReplyKeyboardRemove()
     img_path = math_plot.plot(text, math_solver)
     if img_path == 'ERROR':
-        answer = f'К сожалению, я еще не умею строить такие графики {emoji.emojize(":frowning_face:")}'
+        answer = f'К сожалению, я еще не умею строить такие графики {emoji.emojize(":frowning_face:")}.'
         await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
     else:
         await bot.send_photo(message.from_user.id, photo=open('path', 'rb'))
+
+@dp.message_handler(state='*', content_types=types.ContentType.ANY)
+async def process_unknown_message(message: types.Message):
+    await message.answer(f"Я тебя не понимаю {emoji.emojize(':crying_face:')}, не могу обработать это сообщение.")
 
 
 if __name__ == '__main__':
