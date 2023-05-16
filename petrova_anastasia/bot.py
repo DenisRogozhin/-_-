@@ -54,9 +54,6 @@ class BotStates(StatesGroup):
     start_state = State()
     waiting_state = State()
     choose_epoch = State()
-    exit_state = State()
-    stemming_state = State()
-    lemmatize_state  = State()
     choose_genre = State()
     pages_state = State()
     search_book = State()
@@ -67,7 +64,6 @@ class BotStates(StatesGroup):
 async def process_help_command(message: types.Message):
     answer = """
 /start - начало работы
-/exit - выход в главное меню
     """
     await bot.send_message(message.from_user.id, answer)
 
@@ -75,7 +71,7 @@ async def process_help_command(message: types.Message):
 @dp.message_handler(state=BotStates.start_state)
 async def process_start_command(message: types.Message):
     answer = "Добрый день! Хотите я помогу подобрать Вам книгу?"
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     buttons = ["Да", "Нет"]
     keyboard.add(*buttons)
     await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
@@ -95,13 +91,13 @@ async def choose_epoch(message: types.Message, state: FSMContext):
         answer = "Не понял!"
         await bot.send_message(message.from_user.id, answer)
         answer = "Хотите я помогу подобрать Вам книгу?"
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        buttons = ["да", "нет"]
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+        buttons = ["Да", "Нет"]
         keyboard.add(*buttons)
         await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
     elif text == 'Да':
         answer = "Книгу, написанную в какую эпоху, Вы хотите прочитать?"
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         buttons = ["Любая эпоха"] + [a for a in epochs]
         async with state.proxy() as person_info:
             person_info['genre'] = set()
@@ -111,7 +107,7 @@ async def choose_epoch(message: types.Message, state: FSMContext):
     else: #Завершаем работу бота
         answer = "Хорошего дня!"
         await bot.send_message(message.from_user.id, answer)
-        await BotStates.exit_state.set()
+        await BotStates.start_state.set()
 
 
 @dp.message_handler(state=BotStates.choose_epoch)
@@ -121,7 +117,7 @@ async def choose_genre(message: types.Message, state: FSMContext):
         answer = "Не понял!"
         await bot.send_message(message.from_user.id, answer)
         answer = "Книгу, написанную в какую эпоху, Вы хотите прочитать?"
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         buttons = ["Любая эпоха"] + [a for a in epochs]
         keyboard.add(*buttons)
         await bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
@@ -146,7 +142,7 @@ async def choose_genre(message: types.Message, state: FSMContext):
 async def choose_pages(message: types.Message, state: FSMContext):    
     text = message.text
     if text.lower() in ('stop'):
-        answer = 'Введите, пожалуйста, максимальное количество страниц в книге, что Вас готовы прочитать:'
+        answer = 'Введите, пожалуйста, максимальное количество страниц в книге, что Вы готовы прочитать:'
         await message.answer(answer, reply_markup=types.ReplyKeyboardRemove())
         await BotStates.pages_state.set()
     elif text in genre:
@@ -185,13 +181,13 @@ async def end_choose(message: types.Message, state: FSMContext):
             if k != -1:
                 person_info['viewed'][k] = 1
         if k == -1:
-            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            
             await message.answer('К сожалению, не удалось подобрать книгу с заданными параметрами, поробуйте снова.'
-                             , reply_markup=keyboard)
+                            )
             await BotStates.start_state.set()
         else:
-            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            buttons = ["Да", "Нет"]
+            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+            buttons = ["Да", "Нет", "Хватит"]
             keyboard.add(*buttons)
             await message.answer('Вас заинтересует книга:\n'+
                                  'Название: '+ books[k]['Name']+'\n'+
@@ -205,13 +201,17 @@ async def end_choose(message: types.Message, state: FSMContext):
 @dp.message_handler(state=BotStates.wait_answer)
 async def choose_epoch(message: types.Message, state: FSMContext):    
     text =  message.text
-    if text not in ["Да", "Нет"]:
-        answer = "Не понял! Ответьте, пожалуйста, Да или Нет"
+    if text not in ["Да", "Нет", "Хватит"]:
+        answer = "Не понял! Ответьте, пожалуйста, Да, Нет или Хватит"
         await bot.send_message(message.from_user.id, answer)
 
     elif text == 'Да':
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         await message.answer('Рад, что смог помочь. Хорошего дня!', reply_markup=keyboard)
+        await BotStates.start_state.set()
+    elif text == 'Хватит':
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+        await message.answer('Хорошего дня!', reply_markup=keyboard)
         await BotStates.start_state.set()
     else: 
         async with state.proxy() as person_info:
@@ -220,12 +220,14 @@ async def choose_epoch(message: types.Message, state: FSMContext):
                 person_info['viewed'][k] = 1
 
         if k == -1:
-            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            await message.answer('К сожалению, не удалось подобрать книгу с заданными параметрами, поробуйте снова.')
+            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+            buttons = []
+            keyboard.add(*buttons)
+            await message.answer('К сожалению, не удалось подобрать книгу с заданными параметрами, поробуйте снова.', reply_markup=keyboard)
             await BotStates.start_state.set()
         else:
-            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            buttons = ["Да", "Нет"]
+            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+            buttons = ["Да", "Нет", 'Хватит']
             keyboard.add(*buttons)
             await message.answer('Вас заинтересует книга:\n'+
                                  'Название: '+ books[k]['Name']+'\n'+
@@ -246,12 +248,14 @@ def book_best(rating, viewed):
 def book_rating(person_info):
     status = []
     for book in books:
-            if book['Epoch'] in person_info['epoch'] and book['Pages'] < person_info['pages']:
+            if book['Epoch'] in person_info['epoch'] and book['Pages'] <= person_info['pages']:
                 status.append(len(book['Genres']&person_info['genre']))
             else:
                 status.append(0)
     return status
-    
+
+
+
 @dp.message_handler(content_types=types.ContentType.ANY, state='*')
 async def unknown_message(msg: types.Message):
     await bot.send_message(msg.from_user.id, 'Я умею отвечать только на текстовые сообщения!')  
